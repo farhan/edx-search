@@ -1,3 +1,5 @@
 """ Container module for testing / demoing search """
 
-__version__ = '5.0.3'
+from importlib.metadata import version
+
+__version__ = version("edx-search")

@@ -12,17 +12,16 @@ clean:
 	rm -fr *.egg-info
 
 quality-python: ## Run python linters
-	pycodestyle --config=.pep8 manage.py search edxsearch/settings.py setup.py
-	pylint --rcfile=pylintrc manage.py search edxsearch/settings.py setup.py
+	pycodestyle --config=.pep8 manage.py search edxsearch/settings.py
+	pylint --rcfile=pylintrc manage.py search edxsearch/settings.py
 
 quality: quality-python
 
-requirements:
-	pip install -qr requirements/pip-tools.txt
-	pip install -r requirements/dev.txt
+requirements: ## install development environment requirements
+	uv sync --group dev
 
 validate: clean
-	tox
+	uv run tox
 
 test.start_elasticsearch:
 	docker compose up -d
@@ -34,23 +33,9 @@ test_with_es: clean test.start_elasticsearch
 	coverage run --source='.' manage.py test
 	make test.stop_elasticsearch
 
-compile-requirements: export CUSTOM_COMPILE_COMMAND=make upgrade
-compile-requirements: ## Re-compile *.in requirements to *.txt (without upgrading)
-	pip install -qr requirements/pip-tools.txt
-	# Make sure to compile files after any other files they include!
-	pip-compile --rebuild --allow-unsafe ${COMPILE_OPTS} -o requirements/pip-tools.txt requirements/pip-tools.in
-	pip install -qr requirements/pip-tools.txt
-	pip-compile --rebuild ${COMPILE_OPTS} -o requirements/base.txt requirements/base.in
-	pip-compile --rebuild ${COMPILE_OPTS} -o requirements/testing.txt requirements/testing.in
-	pip-compile --rebuild ${COMPILE_OPTS} -o requirements/quality.txt requirements/quality.in
-	pip-compile --rebuild ${COMPILE_OPTS} -o requirements/ci.txt requirements/ci.in
-	pip-compile --rebuild ${COMPILE_OPTS} -o requirements/dev.txt requirements/dev.in
-	# Let tox control the Django version for tests
-	sed '/^[dD]jango==/d' requirements/testing.txt > requirements/testing.tmp
-	mv requirements/testing.tmp requirements/testing.txt
-
-upgrade: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
-	$(MAKE) compile-requirements COMPILE_OPTS="--upgrade"
+upgrade: ## update python dependencies
+	uv run --with edx-lint edx_lint write_uv_constraints pyproject.toml
+	uv lock --upgrade
 
 test: test_with_es ## run tests and generate coverage report
 
