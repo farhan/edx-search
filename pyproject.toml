@@ -7,7 +7,7 @@ name = "edx-search"
 description = "Search and index routines for index access"
 requires-python = ">=3.12"
 license = "AGPL-3.0"
-license-files = ["LICENSE*"]
+license-files = ["LICENSE*", "AUTHORS"]
 authors = [
     {name = "Open edX Project", email = "oscm@openedx.org"},
 ]
@@ -90,7 +90,7 @@ changelog = false
 [tool.setuptools_scm]
 version_scheme = 'only-version'
 local_scheme = 'no-local-version'
-fallback_version = "0.0.0.dev0"
+fallback_version = "0.0.0"
 
 [tool.uv]
 package = true
